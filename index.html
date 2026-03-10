@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>夸克解析</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f5f5f5;padding:20px;font-family:sans-serif}
+.main{max-width:420px;margin:0 auto;background:#fff;padding:24px;border-radius:12px}
+h3{text-align:center;margin-bottom:16px}
+input,button{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:8px}
+button{background:#00bfff;color:#fff;border:none}
+.item{padding:12px;margin:6px 0;background:#f8f8f8;border-radius:8px}
+.folder{color:#00bfff;cursor:pointer}
+.file{display:flex;justify-content:space-between;align-items:center}
+.download{color:#00bfff}
+#tip{text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="main">
+  <h3>夸克解析</h3>
+  <input id="link" placeholder="粘贴夸克链接">
+  <button onclick="parse()">解析</button>
+  <div id="tip"></div>
+  <div id="list"></div>
+</div>
+
+<script>
+const API = "https://qk.onlysite.dpdns.org";
+
+async function parse() {
+  const link = document.getElementById("link").value.trim();
+  const tip = document.getElementById("tip");
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  tip.textContent = "解析中...";
+
+  try {
+    let res = await.fetch(API + "?url=" + encodeURIComponent(link));
+    let data = await res.json();
+    let items = data.data;
+
+    tip.textContent = `共 ${items.length} 项`;
+
+    items.forEach(it => {
+      let div = document.createElement("div");
+      div.className = "item";
+
+      if (it.dir === 1) {
+        // 文件夹
+        div.innerHTML = `<div class="folder">📁 ${it.file_name}</div>`;
+      } else {
+        // 文件
+        div.innerHTML = `
+          <div class="file">
+            <span>📄 ${it.file_name}</span>
+            <a href="${it.download_url}" download="${it.file_name}" class="download">下载</a>
+          </div>
+        `;
+      }
+      list.appendChild(div);
+    });
+  } catch(e) {
+    tip.textContent = "解析失败";
+  }
+}
+</script>
+</body>
+</html>
